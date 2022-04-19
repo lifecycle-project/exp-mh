@@ -84,7 +84,6 @@ bus_stops_500_preg,non_rep,exposure,bus_stops_500_preg
 connind100_preg,non_rep,exposure,connind100_preg
 connind300_preg,non_rep,exposure,connind300_preg
 distinvnear1_preg,non_rep,exposure,distinvnear1_preg
-fdensity300_preg,non_rep,exposure,fdens300_preg
 fdensity300_preg,non_rep,exposure,fdensity300_preg
 foodenvdens300_preg,non_rep,exposure,foodenvdens300_preg
 frichness300_preg,non_rep,exposure,frichness300_preg
@@ -104,7 +103,6 @@ ln_c_preg,non_rep,exposure,ln_c_preg
 ln_preg,non_rep,exposure,ln_preg
 lst_preg,non_rep,exposure,lst_preg
 mdist_preg,non_rep,exposure,mdist_preg
-natgr_preg,non_rep,exposure,natgr_preg
 natgr_preg,non_rep,exposure,natgr_preg
 ndvi100_preg,non_rep,exposure,ndvi100_preg
 ndvi300_preg,non_rep,exposure,ndvi300_preg
