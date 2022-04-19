@@ -1,4 +1,4 @@
-﻿variable,table_name,type,short_name,analysis_name
+﻿variable,df_name,type,short_name,analysis_name
 agebirth_m_y,non_rep,covariate,agebirth_m_y,
 areases_quint_preg,non_rep,covariate,areases_quint_preg,
 areases_tert_preg,non_rep,covariate,areases_tert_preg,
