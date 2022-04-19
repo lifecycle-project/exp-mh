@@ -7,97 +7,14 @@
 ################################################################################
 
 ################################################################################
-# 1. Define variables
+# 1. Define tables
 ################################################################################
-
-## ---- Variable details -------------------------------------------------------
-nonrep.vars <- c(
-  "areases_tert_preg", "areases_quint_preg", "parity_m", "sex", 
-  "birth_month", "birth_year", "eusilc_income_quintiles", "agebirth_m_y", 
-  "ethn1_m", "ethn2_m", "ethn3_m", "coh_country", "preg_smk", "preg_alc", 
-  "preg_cig", "preg_alc_unit", "breastfed_any", "breastfed_ever", "no2_preg", 
-  "pm25_preg", "lden_preg", "ndvi100_preg", "ndvi300_preg", "ndvi500_preg", 
-  "green_dist_preg", "blue_dist_preg", "cohort_id", "ppd", "preg_dia", 
-  "preg_ht", "ga_bj", "ga_us", "prepreg_dep", "prepreg_anx", "prepreg_psych", 
-  "preg_psych", "child_id", "child_no", "preg_no", "mother_id", "outcome", 
-  "con_anomalies", "bdens100_preg", "bdens300_preg", "fdensity300_preg", 
-  "frichness300_preg", "landuseshan300_preg", "walkability_mean_preg", 
-  "agrgr_preg", "natgr_preg", "urbgr_preg", "urb_area_id", "lden_c_preg", 
-  "greenyn300_preg", "blueyn300_preg", "popdens_preg", "pm10_preg")
-
-yearrep.vars <- c(
-  "child_id", "edu_m_", "areases_tert_", "areases_quint_", "fam_splitup", 
-  "no2_", "pm25_", "lden_", "ndvi300_", "green_dist_", "blue_dist_", 
-  "age_years", "cohab_", "bdens100_", "bdens300_", "urbgr_", "natgr_", 
-  "agrgr_", "walkability_mean_", "landuseshan300_", "frichness300_", 
-  "fdensity300_", "lden_c_", "greenyn300_", "blueyn300_", "popdens_", "pm10_")
+cohort_tables <- read_csv(file = here("reference", "table-ref.csv"))
 
 ################################################################################
-# 2. Define tables
-################################################################################
-cohorts_tables <- bind_rows(
-  tibble(
-    cohort = "alspac",
-    table = c(
-      "alspac/2_1_core_1_4/non_rep",
-      "alspac/2_1_core_1_4/yearly_rep")),
-  tibble(
-    cohort = "bib",
-    table = c(
-      "sp455/2_2_core_1_4/non_rep",
-      "sp455/2_2_core_1_4/yearly_rep")),
-  tibble(
-    cohort = "dnbc",
-    table = c(
-      "lc_dnbc_core_2_2.2_2_core_non_rep_tcadman_2021-lc08",
-      "lc_dnbc_core_2_2.2_2_core_yearly_rep_tcadman_2021-lc08")),
-  tibble(
-    cohort = "eden_nan",
-    table = c(
-      "project22-eden/2_1_core_1_0/non_rep", 
-      "project22-eden/2_1_core_1_0/yearly_rep")),
-  tibble(
-    cohort = "eden_poit",
-    table = c(
-      "project22-eden/2_1_core_1_0/non_rep", 
-      "project22-eden/2_1_core_1_0/yearly_rep")),
-  tibble(
-    cohort = "inma_gip",
-    table = c(
-      "lc_isglobal_core_2_1.2_1_core_1_1_non_rep_210118_1", 
-      "lc_isglobal_core_2_1.2_1_core_1_1_yearly_rep_210118_1")),
-  tibble(
-    cohort = "inma_sab",
-    table = c(
-      "lc_isglobal_core_2_1.2_1_core_1_1_non_rep_210118_1", 
-      "lc_isglobal_core_2_1.2_1_core_1_1_yearly_rep_210118_1")),
-  tibble(
-    cohort = "genr",
-    table = c(
-      "lc_genr_core_2_2.2_1_core_non_rep_TC _ECCNLC202053", 
-      "lc_genr_core_2_2.2_1_core_yearly_rep_TC_ECCNLC202053")),
-  tibble(
-    cohort = "moba",
-    table = c(
-      "lc_moba_core_2_1.2_1_core_2021_7_non_rep_urban_environment_postnatal_depression", 
-      "lc_moba_core_2_1.2_1_core_2021_7_yearly_rep_urban_environment_postnatal_depression")),
-  tibble(
-    cohort = "ninfea",
-    table = c(
-      "lc_ninfea_core_2_1.p12_tcadman", 
-      "lc_ninfea_core_2_1.p12_tcadman_yearly_rep")),
-  tibble(
-    cohort = "rhea",
-    table = c(
-      "lc_rhea_core_2_1.tcadman_nr", 
-      "lc_rhea_core_2_1.tcadman_y"))) %>%
-  mutate(type = rep(c("nonrep", "yearrep"), nrow(.)/2))
-
-################################################################################
-# 3. Assign variables
+# 2. Assign variables
 ################################################################################
 cohorts_tables %>%
-  dplyr::filter(cohort %in% c("eden_nan", "eden_poit")) %>%
   pwalk(function(cohort, table, type){
     
     datashield.assign(
