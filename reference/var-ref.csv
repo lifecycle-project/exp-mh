@@ -1,5 +1,5 @@
 ﻿variable,df_name,type,short_name
-adhd_age,mh_rep,outcome,adhd_age_
+adhd_age_,mh_rep,outcome,adhd_age_
 adhd_avg_,mh_rep,outcome,adhd_avg_
 adhd_eval_,mh_rep,outcome,adhd_eval_
 adhd_instr_,mh_rep,outcome,adhd_instr_
