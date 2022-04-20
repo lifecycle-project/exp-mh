@@ -164,3 +164,4 @@ walkability_mean_preg,non_rep,exposure,walkability_preg
 water_preg,non_rep,exposure,water_preg
 child_id,year_rep,covariate,child_id
 edu_m_,year_rep,covariate,edu_m_
+age_years,year_rep,covariate,age_years
