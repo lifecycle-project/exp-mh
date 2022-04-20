@@ -165,3 +165,5 @@ water_preg,non_rep,exposure,water_preg
 child_id,year_rep,covariate,child_id
 edu_m_,year_rep,covariate,edu_m_
 age_years,year_rep,covariate,age_years
+areases_quint_,year_rep,covariate,areases_quint_
+areases_tert_,year_rep,covariate,areases_tert_
