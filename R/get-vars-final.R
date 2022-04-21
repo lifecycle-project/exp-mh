@@ -6,67 +6,77 @@
 ## Email: tica@sund.ku.dk
 ################################################################################
 
+conns <- datashield.login(logindata, restore = "exp-mh")
 ################################################################################
 # 1. Merge all created objects
 ################################################################################
 
+## ---- Join with ds.dataFrame -------------------------------------------------
+ds.dataFrame(
+  x = c("non_rep", "parity_bin", "birth_month_f", "mat_age_f", "preterm", 
+        dummy),
+  newobj = "wide_merge")
+
+## ---- Merge wide format objects ----------------------------------------------
+merge_ref <- c("mat_ed", "area_ses", "iqr_split", "iqr_combine")
+
+merge_ref %>%
+  map(
+    ~ds.merge(
+      x.name = "wide_merge",
+      y.name = .x,
+      by.x.names = "child_id", 
+      by.y.names = "child_id",
+      all.x = T,
+      all.y = T,
+      newobj = "wide_merge"))
+
+## ---- Merge into long format data --------------------------------------------
+ds.merge(
+  x.name = "mh_rep",
+  y.name = "wide_merge",
+  by.x.names = "child_id", 
+  by.y.names = "child_id",
+  all.x = T,
+  all.y = T,
+  newobj = "exp_mh")
+  
+datashield.workspace_save(conns, "exp-mh")
 ################################################################################
 # 2. Fix factor variables   
 ################################################################################
+factor <- dh.classDiscrepancy(df = "exp_mh")
 
-## ---- Create variables with correct levels -----------------------------------
+factor_vec <- factor %>% 
+  dplyr::filter(alspac == "factor") %>%
+  pull(variable)
 
-## Non-repeated
-filled$nonrep %>% 
-  dplyr::filter(eden_nan == "factor") %>% 
-  pull(variable) %>%
-  map(
+fixFactor <- function(df, vars){
+  
+  vars %>% map(
     ~ds.asFactor(
-      input.var.name = paste0("nonrep$", .), 
-      newobj.name = .))
+      input.var.name = paste0(df, "$", .x), 
+      newobj.name = .x))
+  
+  dh.dropCols(
+    df = df, 
+    vars = vars,
+    type = "remove", 
+    checks = F)
+  
+  ds.dataFrame(
+    x = c(df, vars),
+    newobj = df)
+}
 
-## Yearly-repeated
-filled$yearrep %>% 
-  dplyr::filter(eden_nan == "factor") %>% 
-  pull(variable) %>%
-  map(
-    ~ds.asFactor(
-      input.var.name = paste0("yearrep$", .), 
-      newobj.name = .))
+fixFactor("exp_mh", factor_vec)
 
-## ---- Remove original vars from dataframes -----------------------------------
-
-## Non-repeated
-dh.dropCols(
-  df = "nonrep", 
-  vars = filled$nonrep %>% dplyr::filter(eden_nan == "factor") %>% pull(variable), 
-  type = "remove")
-
-## Yearly-repeated
-dh.dropCols(
-  df = "yearrep", 
-  vars = filled$yearrep %>% dplyr::filter(eden_nan == "factor") %>% pull(variable), 
-  type = "remove")
+datashield.workspace_save(conns, "exp-mh")
 
 
-## ---- Join correct variables back --------------------------------------------
-
-## Non-repeated
-ds.dataFrame(
-  x = c(
-    "nonrep", filled$nonrep %>% dplyr::filter(eden_nan == "factor") %>% pull(variable)),
-  newobj = "nonrep")
-
-## Yearly-repeated
-ds.dataFrame(
-  x = c(
-    "yearrep", filled$yearrep %>% dplyr::filter(eden_nan == "factor") %>% pull(variable)),
-  newobj = "yearrep")
 
 
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns[c("eden_nan", "eden_poit")], "env_pnd_4")
-conns  <- datashield.login(logindata, restore = "env_pnd_4")
+
 
 
 ################################################################################

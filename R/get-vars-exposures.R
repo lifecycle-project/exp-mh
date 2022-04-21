@@ -6,157 +6,86 @@
 ## Email: tica@sund.ku.dk
 ################################################################################
 
-################################################################################
-# 1. Remove lden for cohorts it shouldn't exist for  
-################################################################################
-wrong_noise <- c("alspac", "bib", "inma_gip", "inma_sab")
+withr::with_libpaths(new = "~/R/userlib",
+                     devtools::install_github("lifecycle-project/ds-helper",
+                                              ref = "new-function"))
 
-dh.dropCols(
-  df = "yearrep", 
-  vars = "lden_", 
-  type = "remove", 
-  conns = conns[wrong_noise]
-)
 
-length_ref <- tibble(
-  cohort = wrong_noise,
-  length = ds.dim(
-    x = "yearrep",
-    type = "split", 
-    datasources = conns[wrong_noise]) %>%
-    map(~.[[1]]) %>%
-    unlist %>%
-    as.integer)
-
-length_ref %>%
-  pmap(function(cohort, length){
-    ds.rep(
-      x1 = NA, 
-      times = length,
-      source.times = "c",
-      newobj = "lden_", 
-      datasources = conns[cohort])
-  })
-
-ds.dataFrame(
-  x = c("yearrep", "lden_"),
-  newobj = "yearrep", 
-  datasources = conns[wrong_noise]
-)
-
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns, "exp-mh")
 conns <- datashield.login(logindata, restore = "exp-mh")
-
-
 ################################################################################
-# 2. Collapse top two levels of lden  
+# 2. Create IQR versions of variables  
 ################################################################################
-ds.recodeLevels(
-  x = "nonrep$lden_c_preg", 
-  newCategories = c(1, 2, 3, 4, 5, 5), 
-  newobj = "lden_preg_f"
-)
 
-ds.dataFrame(
-  x = c("nonrep", "lden_preg_f"), 
-  newobj = "nonrep"
-)
-
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns, "exp-mh")
-conns <- datashield.login(logindata, restore = "exp-mh")
-
-################################################################################
-# 3. Create IQR versions of variables  
-################################################################################
-ds.dataFrameFill("analysis_df", "analysis_df")
-
-iqr.vars <- bind_rows(exp_preg.ref, exp_year_1.ref) %>%
-  dplyr::filter(type == "cont") %>%
+## ---- Reference table --------------------------------------------------------
+cont_exp.vars <- inner_join(
+  all_vars %>% dplyr::filter(type == "exposure"),
+  filled$non_rep %>% dplyr::filter(alspac %in% c("integer", "numeric")), 
+  by = "variable") %>%
   pull(variable)
 
+## ---- Do the business --------------------------------------------------------
 dh.makeIQR(
-  df = "analysis_df", 
-  vars = iqr.vars, 
-  type = "split")
+  df = "non_rep", 
+  vars = cont_exp.vars, 
+  type = "split", 
+  new_obj = "iqr_split")
 
 dh.makeIQR(
-  df = "analysis_df", 
-  vars = iqr.vars, 
-  type = "combine")
+  df = "non_rep", 
+  vars = cont_exp.vars, 
+  type = "combine", 
+  new_obj = "iqr_combine")
 
-## ---- Save progress ----------------------------------------------------------
+## ---- Remove variables we don't need -----------------------------------------
+getTransVarnames <- function(df, suffix){
+  
+  out <- ds.colnames(df) %>% map(~str_subset(., suffix)) %>%
+    map(~c(., "child_id"))
+  
+}
+
+split_names <- getTransVarnames("iqr_split", "iqr_s")
+  
+split_names %>% 
+  imap(
+    ~dh.dropCols(
+      df = "iqr_split", 
+      vars = .x, 
+      type = "keep",
+      conns = conns[.y],
+      checks = F))
+
+combine_names <- getTransVarnames("iqr_combine", "iqr_c")
+  
+combine_names %>% 
+  imap(
+    ~dh.dropCols(
+      df = "iqr_combine", 
+      vars = .x, 
+      type = "keep",
+      conns = conns[.y],
+      checks = F))
+
 datashield.workspace_save(conns, "exp-mh")
-conns <- datashield.login(logindata, restore = "exp-mh")
-
 ################################################################################
 # 4. Create quartiles of continuous variables
 ################################################################################
+#cont_exp.vars %>%
+#  map(
+#    ~dh.quartileSplit(
+#      df = "non_rep",
+#      var = .x, 
+#      type = "split",
+#      band_action = "ge_l",
+#      var_suffix = "_q_c", 
+#      new_obj = "quartiles"
+#    ))
 
-quart.ref <- tibble()
+#quart_vars <- getTransVarnames("quartiles", "_q_c")
 
-## ---- NO2 --------------------------------------------------------------------
-dh.quartileSplit(
-  df = "analysis_df",
-  var = "no2_preg_iqr_c",
-  type = "split",
-  band_action = "ge_l",
-  var_suffix = "_q_c_")
+#datashield.workspace_save(conns, "exp-mh")
 
-## ---- PM2.5 ------------------------------------------------------------------
-dh.quartileSplit(
-  df = "analysis_df",
-  var = "pm25_preg_iqr_c",
-  type = "split",
-  band_action = "ge_l",
-  var_suffix = "_q_c_")
 
-## ---- PM10 -------------------------------------------------------------------
-dh.quartileSplit(
-  df = "analysis_df",
-  var = "pm10_preg_iqr_c",
-  type = "split",
-  band_action = "ge_l",
-  var_suffix = "_q_c_")
 
-## ---- NDVI -------------------------------------------------------------------
-dh.quartileSplit(
-  df = "analysis_df",
-  var = "ndvi300_preg_iqr_c",
-  type = "split",
-  band_action = "ge_l",
-  var_suffix = "_q_c_")
 
-## ---- Facility richness ------------------------------------------------------
-dh.quartileSplit(
-  df = "analysis_df",
-  var = "frichness300_preg_iqr_c",
-  type = "split",
-  band_action = "ge_l",
-  var_suffix = "_q_c_")
 
-## ---- Walkability ------------------------------------------------------------
-dh.quartileSplit(
-  df = "analysis_df",
-  var = "walkability_mean_preg_iqr_c",
-  type = "split",
-  band_action = "ge_l",
-  var_suffix = "_q_c_")
-
-## ---- Population density -----------------------------------------------------
-dh.quartileSplit(
-  df = "analysis_df",
-  var = "popdens_preg_iqr_c",
-  type = "split",
-  band_action = "ge_l",
-  var_suffix = "_q_c_")
-
-################################################################################
-# 5. Fill missing variables
-################################################################################
-ds.dataFrameFill("analysis_df", "analysis_df")
-
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns, "exp-mh")
-conns <- datashield.login(logindata, restore = "exp-mh")  

@@ -6,11 +6,11 @@
 ## Email: tica@sund.ku.dk
 ################################################################################
 
-
+conns <- datashield.login(logindata, restore = "exp-mh")
 ################################################################################
-# 6. Recode parity as binary
+# 1. Recode parity as binary
 ################################################################################
-ds.asNumeric("nonrep$parity", "parity")
+ds.asNumeric("non_rep$parity", "parity")
 
 ds.Boole(
   V1 = "parity",
@@ -21,14 +21,11 @@ ds.Boole(
 
 ds.asFactor("parity_bin", "parity_bin")
 
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns[c("eden_nan", "eden_poit")], "env_pnd_5")
-conns <- datashield.login(logindata, restore = "env_pnd_5")
-
+datashield.workspace_save(conns, "exp-mh")
 ################################################################################
-# 7. Recode birth month
+# 2. Recode birth month
 ################################################################################
-ds.asNumeric("nonrep$birth_month", "birth_month")
+ds.asNumeric("non_rep$birth_month", "birth_month")
 
 season_ref <- tibble(
   old_val = seq(1, 12),
@@ -51,67 +48,54 @@ season_ref %>%
 
 ds.asFactor("birth_month", "birth_month_f")
 
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns[c("eden_nan", "eden_poit")], "env_pnd_6")
-conns <- datashield.login(logindata, restore = "env_pnd_6")
-
+datashield.workspace_save(conns, "exp-mh")
 ################################################################################
-# 8. Recode birth year
+# 3. Recode birth year
 ################################################################################
-ds.asNumeric("nonrep$birth_year", "birth_year_c")
+#ds.asNumeric("non_rep$birth_year", "birth_year_c")
 
-ds.table("birth_year_c")
+#year_ref <- tibble(
+#  old_val = c(
+#    1990, 1991, 1992, 1993, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 
+#    2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017),
+#  new_val = c(
+#    "90_95", "90_95", "90_95", "90_95", "96_00", "96_00", "96_00", "96_00", 
+#    "96_00", "01_05", "01_05", "01_05", "01_05", "01_05", "05_11", "05_11", 
+#    "05_11", "05_11", "05_11", "05_11", "05_11", "05_11", "05_11", "05_11", 
+#    "05_11", "05_11"))
+#
+#year_ref %>% 
+#  pmap(function(old_val, new_val){
+#    
+#    ds.recodeValues(
+#      var.name = "birth_year_c",
+#      values2replace.vector = old_val,
+#      new.values.vector = new_val,
+#      newobj = "birth_year_c", 
+#      datasources = conns[names(conns)])
+#    
+#  })
+#
+#ds.asFactor("birth_year_c", "birth_year_f")
 
-year_ref <- tibble(
-  old_val = c(
-    1990, 1991, 1992, 1993, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 
-    2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017),
-  new_val = c(
-    "90_95", "90_95", "90_95", "90_95", "96_00", "96_00", "96_00", "96_00", 
-    "96_00", "01_05", "01_05", "01_05", "01_05", "01_05", "05_11", "05_11", 
-    "05_11", "05_11", "05_11", "05_11", "05_11", "05_11", "05_11", "05_11", 
-    "05_11", "05_11")
-)
-
-year_ref %>% 
-  pmap(function(old_val, new_val){
-    
-    ds.recodeValues(
-      var.name = "birth_year_c",
-      values2replace.vector = old_val,
-      new.values.vector = new_val,
-      newobj = "birth_year_c", 
-      datasources = conns[names(conns) != "rhea"])
-    
-  })
-
-ds.asFactor("birth_year_c", "birth_year_f")
-
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns[c("eden_nan", "eden_poit")], "env_pnd_7")
-conns <- datashield.login(logindata, restore = "env_pnd_7")
-
+datashield.workspace_save(conns, "exp-mh")
 ################################################################################
-# 9. Recode maternal age at birth
+# 4. Recode maternal age at birth
 ################################################################################
-ds.asNumeric("nonrep$agebirth_m_y", "mat_age")
+ds.asNumeric("non_rep$agebirth_m_y", "mat_age")
 
 mat_age_ref <- tibble(
   old_val = c(
     seq(15, 20, 1),
-    seq(21, 25, 1), 
-    seq(26, 30, 1), 
-    seq(31, 35, 1), 
-    seq(36, 40, 1), 
+    seq(21, 30, 1), 
+    seq(31, 40, 1), 
     c(seq(41, 50, 1), 55)),
   new_val = c(
     rep("15_20", 6), 
-    rep("21_25", 5), 
-    rep("26_30", 5), 
-    rep("31_35", 5),
-    rep("36_40", 5),
+    rep("21_25", 10), 
+    rep("31_40", 10), 
     rep("41_50", 11)
-  )
+    )
 )
 
 mat_age_ref %>% 
@@ -127,99 +111,111 @@ mat_age_ref %>%
 
 ds.asFactor("mat_age", "mat_age_f")
 
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns[c("eden_nan", "eden_poit")], "env_pnd_8")
-conns <- datashield.login(logindata, restore = "env_pnd_8")
-
+datashield.workspace_save(conns, "exp-mh")
 ################################################################################
-# 10. Create preterm birth variable
+# 5. Create preterm birth variable
 ################################################################################
 ds.assign(
-  toAssign = "nonrep$ga_bj", 
+  toAssign = "non_rep$ga_bj", 
   newobj = "ga_all",
-  datasources = conns[!conns == "moba"]
-) 
+  datasources = conns[!conns == "moba"]) 
 
 ds.assign(
-  toAssign = "nonrep$ga_us", 
+  toAssign = "non_rep$ga_us", 
   newobj = "ga_all",
-  datasources = conns["moba"]
-)
+  datasources = conns["moba"])
 
 ds.Boole(
   V1 = "ga_all",
   V2 = 37*7,
   Boolean.operator = ">",
-  newobj = "ga_bin"
-)
+  newobj = "ga_bin")
 
 ds.asFactor("ga_bin", "preterm")
 
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns[c("eden_nan", "eden_poit")], "env_pnd_9")
-conns <- datashield.login(logindata, restore = "env_pnd_9")
-
+datashield.workspace_save(conns, "exp-mh")
 ################################################################################
-# 14. Create exposure for maternal education at birth  
+# 6. Create exposure for maternal education at birth  
 ################################################################################
-
-## ---- Subset to keep observations where child's age == 0 ---------------------
-ds.dataFrameSubset(
-  df.name = "yearrep", 
-  V1.name = "yearrep$age_years",
-  V2.name = "0",
-  Boolean.operator = "==",
-  newobj = "mat_ed_tmp")
-
-## ---- Convert to wide format -------------------------------------------------
-ds.reShape(
-  data.name = "mat_ed_tmp",
-  timevar.name = "age_years",
-  idvar.name = "child_id",
-  v.names = "edu_m_", 
-  direction = "wide", 
-  newobj = "mat_ed")
+dh.makeStrata(
+  df = "year_rep", 
+  var_to_subset = "edu_m_",
+  id_var = "child_id",
+  age_var = "age_years",
+  bands = c(0, 1), 
+  band_action = "ge_le", 
+  mult_action = "earliest",
+  new_obj = "mat_ed")
 
 dh.dropCols(
   df = "mat_ed", 
-  vars = c("child_id", "edu_m_.0"),
-  type = "keep"
-)
+  vars = c("child_id", "edu_m_.0_1"),
+  type = "keep", 
+  checks = F)
 
-## ---- Rename -----------------------------------------------------------------
-dh.renameVars(
-  df = "mat_ed", 
-  current_names = "edu_m_.0",
-  new_names = "edu_m_0",
-  conns = conns)
+datashield.workspace_save(conns, "exp-mh")
+################################################################################
+# 7. Create combined area deprivation variables  
+################################################################################
+dh.makeStrata(
+  df = "year_rep", 
+  var_to_subset = "areases_tert_",
+  keep_vars = "areases_quint_",
+  id_var = "child_id",
+  age_var = "age_years",
+  bands = c(0, 1), 
+  band_action = "ge_le", 
+  mult_action = "earliest",
+  new_obj = "area_ses")
 
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns[c("eden_nan", "eden_poit")], "env_pnd_13")
-conns <- datashield.login(logindata, restore = "env_pnd_13")
+dh.dropCols(
+  df = "area_ses", 
+  vars = c("child_id", "areases_tert_.0_1", "areases_quint_.0_1"),
+  type = "keep", 
+  checks = F)
+
+datashield.workspace_save(conns, "exp-mh")
 
 ################################################################################
-# 16. Create combined area deprivation variable  
+# 8. Create cohort dummy variables  
 ################################################################################
 
-# MoBa only has it in the first year of birth.
-ds.assign(
-  toAssign = "env_pnd$areases_tert_preg", 
-  newobj = "areases_tert",
-  datasources = conns[names(conns) != "moba"]
-) 
+## ---- Get cohort codes -------------------------------------------------------
+coh_codes <- dh.getStats(
+  df = "non_rep",
+  vars = "cohort_id")
 
-ds.assign(
-  toAssign = "env_pnd$areases_tert_1", 
-  newobj = "areases_tert",
-  datasources = conns["moba"]
-)
+coh_codes.tab <- coh_codes$categorical %>% 
+  dplyr::filter(value != 0 & !cohort %in% c(sub_coh, "combined")) %>%
+  mutate(ref_var = "cohort_id") %>%
+  dplyr::select(category, cohort, ref_var)
 
-## ---- Join back in -----------------------------------------------------------
-ds.dataFrame(
-  x = c("env_pnd", "areases_tert"), 
-  newobj = "env_pnd")
+## ---- Get urban ID codes -----------------------------------------------------
+urb_codes <- dh.getStats(
+  df = "non_rep",
+  vars = "urb_area_id")
 
-## ---- Save progress ----------------------------------------------------------
-datashield.workspace_save(conns[c("eden_nan", "eden_poit")], "env_pnd_15")
-conns <- datashield.login(logindata, restore = "env_pnd_15")
+urb_codes.tab <- urb_codes$categorical %>% 
+  dplyr::filter(value != 0 & cohort %in% sub_coh) %>%
+  mutate(ref_var = "urb_area_id") %>%
+  dplyr::select(category, cohort, ref_var)
 
+ref_codes <- bind_rows(coh_codes.tab, urb_codes.tab) %>%
+  mutate(
+    dummy = paste0(cohort, "_d"), 
+    value = as.character(category)) %>%
+  dplyr::select(dummy, value, ref_var)
+
+## ---- Make dummy variable ----------------------------------------------------
+ref_codes %>%
+  pmap(function(variable, dummy, value, ref_var){
+    ds.Boole(
+      V1 = paste0("non_rep$", ref_var), 
+      V2 = value,
+      Boolean.operator = "==",
+      numeric.output = TRUE, 
+      na.assign = 0, 
+      newobj = dummy)
+  })
+
+datashield.workspace_save(conns, "exp-mh")
