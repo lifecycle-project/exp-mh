@@ -1,4 +1,4 @@
-﻿variable,df_name,type,short_name,full_name
+variable,df_name,type,short_name,full_name
 adhd_age_,mh_rep,outcome,adhd_age_,
 adhd_avg_,mh_rep,outcome,adhd_avg_,
 adhd_eval_,mh_rep,outcome,adhd_eval_,
@@ -90,8 +90,8 @@ prepreg_dep,non_rep,covariate,prepreg_dep,Pre-pregancy depression
 prepreg_psych,non_rep,covariate,prepreg_psych,Pre-pregnancy psychiatric problems
 sex,non_rep,covariate,sex,Child sex
 urb_area_id,non_rep,covariate,urb_area_id,Urban area code
-agrgr_preg,non_rep,exposure,agrgr_preg,TEMP_agrgr_preg
-airpt_preg,non_rep,exposure, airpt_preg,TEMP_airpt_preg
+agrgr_preg,non_rep,exposure,agrgr_preg,% agricultural areas (300m)
+airpt_preg,non_rep,exposure, airpt_preg,% airport areas (300m)
 areases_quint_preg,non_rep,exposure,areases_quint_preg,Area SES (quintiles)
 areases_tert_preg,non_rep,exposure,areases_tert_preg,Area SES (tertiles)
 bdens100_preg,non_rep,exposure,bdens100_preg,Building density (100m)
@@ -107,26 +107,26 @@ bus_stops_300_preg,non_rep,exposure,bus_stops_300_preg,Number of bus stops (300m
 bus_stops_500_preg,non_rep,exposure,bus_stops_500_preg,Number of bus stops (500m)
 connind100_preg,non_rep,exposure,connind100_preg,Connectivity density (100m)
 connind300_preg,non_rep,exposure,connind300_preg,Connectivity density (300m)
-distinvnear1_preg,non_rep,exposure,distinvnear1_preg,TEMP_distinvnear1_preg
+distinvnear1_preg,non_rep,exposure,distinvnear1_preg,Inverse distance to nearest road
 fdensity300_preg,non_rep,exposure,fdensity300_preg,Facility density (300m)
-foodenvdens300_preg,non_rep,exposure,foodenvdens300_preg,TEMP_foodenvdens300_preg
+foodenvdens300_preg,non_rep,exposure,foodenvdens300_preg,Density unhealthy food facilities (300m)
 frichness300_preg,non_rep,exposure,frichness300_preg,Facility richness (300m)
 green_dist_preg,non_rep,exposure,green_dist_preg,Distance to green space
 green_size_preg,non_rep,exposure,green_size_preg,Size of green space
 greenyn300_preg,non_rep,exposure,greenyn300_preg,Access to green space
-hdres_preg,non_rep,exposure,hdres_preg,TEMP_hdres_preg
-hmax_preg,non_rep,exposure,hmax_preg,TEMP_hmax_preg
-hmin_preg,non_rep,exposure,hmin_preg,TEMP_hmin_preg
-hum_preg,non_rep,exposure,hum_preg,TEMP_hum_preg
-indtr_preg,non_rep,exposure,indtr_preg,TEMP_indtr_preg
+hdres_preg,non_rep,exposure,hdres_preg,% Hdres land use (300m)
+hmax_preg,non_rep,exposure,hmax_preg,Average maximum relative humidity
+hmin_preg,non_rep,exposure,hmin_preg,Average minimum relative humidity
+hum_preg,non_rep,exposure,hum_preg,Average mean relative humidity
+indtr_preg,non_rep,exposure,indtr_preg,% industrial land use (300m)
 landuseshan300_preg,non_rep,exposure,landuse300_preg,Shannon's land use index
 lden_c_preg,non_rep,exposure,lden_c_preg,Day-evening-night noise level (categorical)
 lden_preg,non_rep,exposure,lden_preg,Day-evening-night noise level
 ldres_preg,non_rep,exposure,ldres_preg,% ldres land use (300m)
-ln_c_preg,non_rep,exposure,ln_c_preg,TEMP_ln_c_preg
-ln_preg,non_rep,exposure,ln_preg,TEMP_ln_preg
-lst_preg,non_rep,exposure,lst_preg,TEMP_lst_preg
-mdist_preg,non_rep,exposure,mdist_preg,TEMP_mdist_preg
+ln_c_preg,non_rep,exposure,ln_c_preg,Night noise level (categorical)
+ln_preg,non_rep,exposure,ln_preg,Night noise level (continuous)
+lst_preg,non_rep,exposure,lst_preg,Land surface temperature
+mdist_preg,non_rep,exposure,mdist_preg,Distance to meterological station
 natgr_preg,non_rep,exposure,natgr_preg,% natural green areas (300m)
 ndvi100_preg,non_rep,exposure,ndvi100_preg,NDVI (100m)
 ndvi300_preg,non_rep,exposure,ndvi300_preg,NDVI (300m)
@@ -136,7 +136,7 @@ nox_preg,non_rep,exposure,nox_preg,Nitrogen oxides
 oc_preg,non_rep,exposure,oc_preg,Organic carbon
 op_dtt_preg,non_rep,exposure,op_dtt_preg,Dithiothreitol
 op_esr_preg,non_rep,exposure,op_esr_preg,Electron spin resonance
-other_preg,non_rep,exposure,other_preg,TEMP_other_preg
+other_preg,non_rep,exposure,other_preg,% other land use (300m)
 pah_preg,non_rep,exposure,pah_preg,Polycyclic aromatic hydrocarbons
 pm10_preg,non_rep,exposure,pm10_preg,PM10
 pm25_preg,non_rep,exposure,pm25_preg,PM2.5
@@ -148,20 +148,20 @@ pm25zn_preg,non_rep,exposure,pm25zn_preg,Zinc
 pmcoarse_preg,non_rep,exposure,pmcoarse_preg,PM coarse
 popdens_preg,non_rep,exposure,popdens_preg,Population density
 port_preg,non_rep,exposure,port_preg,% port areas
-tm_preg,non_rep,exposure,tm_preg,TEMP_tm_preg
-tmax_preg,non_rep,exposure,tmax_preg,TEMP_tmax_preg
-tmin_preg,non_rep,exposure,tmin_preg,TEMP_tmin_preg
-trafload100_preg,non_rep,exposure,trafload100_preg,TEMP_trafload100_preg
-trafmajorload100_preg,non_rep,exposure,trafmajorload100_preg,TEMP_trafmajorload100_preg
-trafnear_preg,non_rep,exposure,trafnear_preg,TEMP_trafnear_preg
-trans_preg,non_rep,exposure,trans_preg,TEMP_trans_preg
+tm_preg,non_rep,exposure,tm_preg,Average mean temperature
+tmax_preg,non_rep,exposure,tmax_preg,Average maximum temperature
+tmin_preg,non_rep,exposure,tmin_preg,Average minimum temperature
+trafload100_preg,non_rep,exposure,trafload100_preg,Traffic load (100m)
+trafmajorload100_preg,non_rep,exposure,trafmajorload100_preg,Traffic load major roads (100m)
+trafnear_preg,non_rep,exposure,trafnear_preg,Traffic load nearest road
+trans_preg,non_rep,exposure,trans_preg,% trans use (300m)
 urbgr_preg,non_rep,exposure,urbgr_preg,% urban green areas (300m)
-uvddc_preg,non_rep,exposure,uvddc_preg,TEMP_uvddc_preg
-uvdec_preg,non_rep,exposure,uvdec_preg,TEMP_uvdec_preg
-uvdvc_preg,non_rep,exposure,uvdvc_preg,TEMP_uvdvc_preg
-vldres_preg,non_rep,exposure,vldres_preg,TEMP_vldres_preg
+uvddc_preg,non_rep,exposure,uvddc_preg,Average DNA damage UK dose
+uvdec_preg,non_rep,exposure,uvdec_preg,Average Erythemal UV dose
+uvdvc_preg,non_rep,exposure,uvdvc_preg,Average vitamin-d UV dose
+vldres_preg,non_rep,exposure,vldres_preg,% vldres land use (300m)
 walkability_mean_preg,non_rep,exposure,walkability_preg,Walkability score
-water_preg,non_rep,exposure,water_preg,TEMP_water_preg
+water_preg,non_rep,exposure,water_preg,% water land use (300m)
 child_id,year_rep,covariate,child_id,Child ID
 edu_m_,year_rep,covariate,edu_m_,Maternal education
 age_years,year_rep,covariate,age_years,Child age (years)
