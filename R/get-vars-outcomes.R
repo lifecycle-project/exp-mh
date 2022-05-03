@@ -16,7 +16,7 @@ age_vars <- c("ext_age_", "int_age_", "adhd_age_",  "lan_age_",
 #"asd_age_"
 
 age_avail <- dh.getStats(
-  df = "mh_rep", 
+  df = "mh_rep_sub", 
   vars = age_vars)
 
 age_avail <- age_avail$continuous %>%
@@ -27,16 +27,16 @@ age_avail %>%
   pmap(function(variable, cohort, ...){
 
     ds.assign(
-      toAssign = paste0("mh_rep$", variable, "+0.01"), 
+      toAssign = paste0("mh_rep_sub$", variable, "+0.01"), 
       newobj = variable, 
       datasources = conns[cohort])
   })
 
 dh.dropCols(
-  df = "mh_rep", 
+  df = "mh_rep_sub", 
   vars = age_vars, 
   type = "remove", 
-  new_obj = "mh_rep", 
+  new_obj = "mh_rep_sub_out", 
   checks = F)
 
 age_conns <- age_avail %>%
@@ -48,17 +48,17 @@ age_conns <- age_avail %>%
 age_conns %>%
   imap(
     ~ds.dataFrame(
-       x = c("mh_rep", .x), 
-       newobj = "mh_rep", 
+       x = c("mh_rep_sub_out", .x), 
+       newobj = "mh_rep_sub_out", 
        datasources = conns[.y]))
 
-ds.dataFrameFill("mh_rep", "mh_rep")
+ds.dataFrameFill("mh_rep_sub_out", "mh_rep_sub_out")
 
 ## ---- Do the business --------------------------------------------------------
 age_vars %>%
   map(
     ~dh.makeAgePolys(
-      df = "mh_rep", 
+      df = "mh_rep_sub_out", 
       age_var = .x))
 
 datashield.workspace_save(conns, "exp-mh")

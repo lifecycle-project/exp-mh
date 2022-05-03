@@ -30,8 +30,8 @@ cohort_tables <- left_join(
 
 ## ---- All cohorts with initial access ----------------------------------------
 cohort_tables %>%
-  dplyr::filter(cohort %in% c("alspac", "dnbc", "moba", "ninfea", "inma_gip", 
-                              "inma_sab", "inma_val")) %>%
+  dplyr::filter(cohort %in% c("alspac", "moba", "ninfea", "inma_gip", 
+                              "inma_sab", "inma_val", "rhea")) %>%
   pwalk(function(cohort, table, df_name, vars){
     
     datashield.assign(
@@ -41,10 +41,13 @@ cohort_tables %>%
       variables = unlist(vars))
   })
 
+ds.colnames("non_rep")
+ds.colnames("year_rep")
+ds.colnames("mh_rep")
+
 ## ---- BiB --------------------------------------------------------------------
 cohort_tables %>%
-  dplyr::filter(cohort == "genr" & df_name == "mh_rep") %>%
-  dplyr::filter(df_name == "mh_rep") %>%
+  dplyr::filter(cohort == "rhea" & df_name == "year_rep") %>%
   pwalk(function(cohort, table, df_name, vars){
     
     datashield.assign(
@@ -53,6 +56,8 @@ cohort_tables %>%
       value = table, 
       variables = unlist(vars))
   })
+
+ds.summary("year_rep")
 
 datashield.assign(
   conns = conns["genr"], 
@@ -72,18 +77,21 @@ available <- vars_collapse %>%
   }) %>%
   set_names(sort(vars_collapse$df_name))
 
-available$non_rep
+available$non_rep %>% print(n = Inf)
 available$year_rep
 available$mh_rep
 
 save.image()
 
+available$non_rep %>% print(n = Inf)
 ################################################################################
 # 4. Fill missing variables  
 ################################################################################
-ds.dataFrameFill("non_rep", "non_rep")
-ds.dataFrameFill("year_rep", "year_rep")
-ds.dataFrameFill("mh_rep", "mh_rep")
+ds.dataFrameFill("non_rep", "non_rep_fill")
+ds.dataFrameFill("year_rep", "year_rep_fill")
+ds.dataFrameFill("mh_rep", "mh_rep_fill")
+
+ds.dataFrame("year_rep", newobj = "year_rep_fill")
 
 datashield.workspace_save(conns, "exp-mh")
 ################################################################################
@@ -107,6 +115,7 @@ save.image()
 ################################################################################
 # 6. Subset to include only those with urban environment data  
 ################################################################################
+conns <- datashield.login(logindata, restore = "exp-mh")
 
 ## ---- Create dataframe with urb_id info --------------------------------------
 dh.dropCols(
@@ -117,28 +126,27 @@ dh.dropCols(
 
 ## ---- Merge this into datasets where it doesn't exist ------------------------
 ds.merge(
-  x.name = "year_rep", 
+  x.name = "year_rep_fill", 
   y.name = "area_id", 
   by.x.names = "child_id", 
   by.y.names = "child_id", 
   all.x = TRUE, 
-  newobj = "year_rep")
+  newobj = "year_rep_urb")
 
 ds.merge(
-  x.name = "mh_rep", 
+  x.name = "mh_rep_fill", 
   y.name = "area_id", 
   by.x.names = "child_id", 
   by.y.names = "child_id", 
   all.x = TRUE, 
-  newobj = "mh_rep")
+  newobj = "mh_rep_urb")
 
 ## ---- Do the business --------------------------------------------------------
 urb_sub <- tibble(
-  df = c("non_rep", "year_rep", "mh_rep"), 
-  new_obj = paste0(df, "_urb_val"))
+  df = c("non_rep_fill", "year_rep_urb", "mh_rep_urb"), 
+  new_obj = c("non_rep_sub", "year_rep_sub", "mh_rep_sub"))
 
 urb_sub %>%
-  dplyr::filter(df == "year_rep") %>%
   pmap(function(df, new_obj){
     
     dh.defineCases(
@@ -153,7 +161,7 @@ urb_sub %>%
       V2.name = "1", 
       Boolean.operator = "==", 
       keep.NAs = FALSE, 
-      newobj = df)
+      newobj = new_obj)
     
   })
 
@@ -182,9 +190,9 @@ cohortSubset <- function(df){
   
 }
 
-cohortSubset("non_rep")
-cohortSubset("year_rep")
-cohortSubset("mh_rep")
+cohortSubset("non_rep_sub")
+cohortSubset("year_rep_sub")
+cohortSubset("mh_rep_sub")
 
 datashield.workspace_save(conns, "exp-mh")
 

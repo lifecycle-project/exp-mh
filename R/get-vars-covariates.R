@@ -10,7 +10,7 @@ conns <- datashield.login(logindata, restore = "exp-mh")
 ################################################################################
 # 1. Recode parity as binary
 ################################################################################
-ds.asNumeric("non_rep$parity", "parity")
+ds.asNumeric("non_rep_sub$parity", "parity")
 
 ds.Boole(
   V1 = "parity",
@@ -25,7 +25,7 @@ datashield.workspace_save(conns, "exp-mh")
 ################################################################################
 # 2. Recode birth month
 ################################################################################
-ds.asNumeric("non_rep$birth_month", "birth_month")
+ds.asNumeric("non_rep_sub$birth_month", "birth_month")
 
 season_ref <- tibble(
   old_val = seq(1, 12),
@@ -82,7 +82,7 @@ datashield.workspace_save(conns, "exp-mh")
 ################################################################################
 # 4. Recode maternal age at birth
 ################################################################################
-ds.asNumeric("non_rep$agebirth_m_y", "mat_age")
+ds.asNumeric("non_rep_sub$agebirth_m_y", "mat_age")
 
 mat_age_ref <- tibble(
   old_val = c(
@@ -116,12 +116,12 @@ datashield.workspace_save(conns, "exp-mh")
 # 5. Create preterm birth variable
 ################################################################################
 ds.assign(
-  toAssign = "non_rep$ga_bj", 
+  toAssign = "non_rep_sub$ga_bj", 
   newobj = "ga_all",
   datasources = conns[!conns == "moba"]) 
 
 ds.assign(
-  toAssign = "non_rep$ga_us", 
+  toAssign = "non_rep_sub$ga_us", 
   newobj = "ga_all",
   datasources = conns["moba"])
 
@@ -138,7 +138,7 @@ datashield.workspace_save(conns, "exp-mh")
 # 6. Create exposure for maternal education at birth  
 ################################################################################
 dh.makeStrata(
-  df = "year_rep", 
+  df = "year_rep_sub", 
   var_to_subset = "edu_m_",
   id_var = "child_id",
   age_var = "age_years",
@@ -158,7 +158,7 @@ datashield.workspace_save(conns, "exp-mh")
 # 7. Create combined area deprivation variables  
 ################################################################################
 dh.makeStrata(
-  df = "year_rep", 
+  df = "year_rep_sub", 
   var_to_subset = "areases_tert_",
   keep_vars = "areases_quint_",
   id_var = "child_id",
@@ -182,7 +182,7 @@ datashield.workspace_save(conns, "exp-mh")
 
 ## ---- Get cohort codes -------------------------------------------------------
 coh_codes <- dh.getStats(
-  df = "non_rep",
+  df = "non_rep_sub",
   vars = "cohort_id")
 
 coh_codes.tab <- coh_codes$categorical %>% 
@@ -192,7 +192,7 @@ coh_codes.tab <- coh_codes$categorical %>%
 
 ## ---- Get urban ID codes -----------------------------------------------------
 urb_codes <- dh.getStats(
-  df = "non_rep",
+  df = "non_rep_sub",
   vars = "urb_area_id")
 
 urb_codes.tab <- urb_codes$categorical %>% 
@@ -210,7 +210,7 @@ ref_codes <- bind_rows(coh_codes.tab, urb_codes.tab) %>%
 ref_codes %>%
   pmap(function(variable, dummy, value, ref_var){
     ds.Boole(
-      V1 = paste0("non_rep$", ref_var), 
+      V1 = paste0("non_rep_sub$", ref_var), 
       V2 = value,
       Boolean.operator = "==",
       numeric.output = TRUE, 

@@ -25,13 +25,13 @@ cont_exp.vars <- inner_join(
 
 ## ---- Do the business --------------------------------------------------------
 dh.makeIQR(
-  df = "non_rep", 
+  df = "non_rep_sub", 
   vars = cont_exp.vars, 
   type = "split", 
   new_obj = "iqr_split")
 
 dh.makeIQR(
-  df = "non_rep", 
+  df = "non_rep_sub", 
   vars = cont_exp.vars, 
   type = "combine", 
   new_obj = "iqr_combine")
