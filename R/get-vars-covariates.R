@@ -16,12 +16,12 @@ ds.Boole(
   V1 = "parity",
   V2 = 1,
   Boolean.operator = ">",
-  newobj = "parity_bin"
-)
+  newobj = "parity_bin")
 
 ds.asFactor("parity_bin", "parity_bin")
 
 datashield.workspace_save(conns, "exp-mh")
+
 ################################################################################
 # 2. Recode birth month
 ################################################################################
@@ -33,8 +33,7 @@ season_ref <- tibble(
     rep("spring", 3),
     rep("summer", 3),
     rep("autumn", 3), 
-    rep("winter", 3))
-)
+    rep("winter", 3)))
 
 season_ref %>% 
   pmap(function(old_val, new_val){
@@ -157,65 +156,16 @@ datashield.workspace_save(conns, "exp-mh")
 ################################################################################
 # 7. Create combined area deprivation variables  
 ################################################################################
-dh.makeStrata(
-  df = "year_rep_sub", 
-  var_to_subset = "areases_tert_",
-  keep_vars = "areases_quint_",
-  id_var = "child_id",
-  age_var = "age_years",
-  bands = c(0, 1), 
-  band_action = "ge_le", 
-  mult_action = "earliest",
-  new_obj = "area_ses")
+ds.asNumeric("non_rep_sub$areases_tert_preg", "area_ses_tert")
 
-dh.dropCols(
-  df = "area_ses", 
-  vars = c("child_id", "areases_tert_.0_1", "areases_quint_.0_1"),
-  type = "keep", 
-  checks = F)
-
+ds.recodeValues(
+  var.name = "area_ses_tert",
+  values2replace.vector = c(1, 2, 3),
+  new.values.vector = c(1, 2, 2),
+  newobj = "area_ses_tert", 
+  datasources = conns[names(conns) != "rhea"])
+   
+ds.asFactor("area_ses_tert", "area_ses_tert_f",  datasources = conns[names(conns) != "rhea"]) 
+   
 datashield.workspace_save(conns, "exp-mh")
 
-################################################################################
-# 8. Create cohort dummy variables  
-################################################################################
-
-## ---- Get cohort codes -------------------------------------------------------
-coh_codes <- dh.getStats(
-  df = "non_rep_sub",
-  vars = "cohort_id")
-
-coh_codes.tab <- coh_codes$categorical %>% 
-  dplyr::filter(value != 0 & !cohort %in% c(sub_coh, "combined")) %>%
-  mutate(ref_var = "cohort_id") %>%
-  dplyr::select(category, cohort, ref_var)
-
-## ---- Get urban ID codes -----------------------------------------------------
-urb_codes <- dh.getStats(
-  df = "non_rep_sub",
-  vars = "urb_area_id")
-
-urb_codes.tab <- urb_codes$categorical %>% 
-  dplyr::filter(value != 0 & cohort %in% sub_coh) %>%
-  mutate(ref_var = "urb_area_id") %>%
-  dplyr::select(category, cohort, ref_var)
-
-ref_codes <- bind_rows(coh_codes.tab, urb_codes.tab) %>%
-  mutate(
-    dummy = paste0(cohort, "_d"), 
-    value = as.character(category)) %>%
-  dplyr::select(dummy, value, ref_var)
-
-## ---- Make dummy variable ----------------------------------------------------
-ref_codes %>%
-  pmap(function(variable, dummy, value, ref_var){
-    ds.Boole(
-      V1 = paste0("non_rep_sub$", ref_var), 
-      V2 = value,
-      Boolean.operator = "==",
-      numeric.output = TRUE, 
-      na.assign = 0, 
-      newobj = dummy)
-  })
-
-datashield.workspace_save(conns, "exp-mh")

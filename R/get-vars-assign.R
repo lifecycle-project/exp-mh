@@ -6,7 +6,37 @@
 ## Email: tica@sund.ku.dk
 ################################################################################
 
+
+
+library(here)
+
+library(DSMolgenisArmadillo)
+
+install.packages("MolgenisArmadillo")
+library(MolgenisArmadillo)
+
+library(arma)
+
+ls("package:DSMolgenisArmadillo")
+ls("package:MolgenisArmadillo")
+
 conns <- datashield.login(logindata, restore = "exp-mh")
+
+opal_coh <- c("dnbc", "genr", "inma_val", "ninfea", "rhea")
+arm_coh <- c("abcd", "alspac", "bib", "eden_nan")
+
+datashield.pkg_status(conns[opal_coh])
+datashield.pkg_status(conns)
+
+armadillo.whitelist_packages(conns)
+
+dsListPackages("arm_coh")
+
+
+arm_coh <- 
+
+conns <- datashield.login(logindata, restore = "exp-mh")
+
 ################################################################################
 # 1. Define tables
 ################################################################################
@@ -27,11 +57,10 @@ cohort_tables <- left_join(
 ################################################################################
 # 2. Assign variables
 ################################################################################
-
+current_coh <- names(conns)
 ## ---- All cohorts with initial access ----------------------------------------
 cohort_tables %>%
-  dplyr::filter(cohort %in% c("alspac", "moba", "ninfea", "inma_gip", 
-                              "inma_sab", "inma_val", "rhea")) %>%
+  dplyr::filter(cohort %in% current_coh) %>%
   pwalk(function(cohort, table, df_name, vars){
     
     datashield.assign(
@@ -40,71 +69,145 @@ cohort_tables %>%
       value = table, 
       variables = unlist(vars))
   })
-
-ds.colnames("non_rep")
-ds.colnames("year_rep")
-ds.colnames("mh_rep")
-
-## ---- BiB --------------------------------------------------------------------
-cohort_tables %>%
-  dplyr::filter(cohort == "rhea" & df_name == "year_rep") %>%
-  pwalk(function(cohort, table, df_name, vars){
-    
-    datashield.assign(
-      conns = conns[cohort], 
-      symbol = df_name, 
-      value = table, 
-      variables = unlist(vars))
-  })
-
-ds.summary("year_rep")
-
-datashield.assign(
-  conns = conns["genr"], 
-  symbol = "non_rep", 
-  value = "lc_genr_core_2_2.2_2_core_non_rep_MG_ACB _ECCNLC202049")
 
 datashield.workspace_save(conns, "exp-mh")
+
+################################################################################
+# 3. Merge outcome tables where they are separate  
+################################################################################
+sep_out_coh <- cohort_tables %>%
+  dplyr::filter(df_name == "mh_rep_2") %>%
+  pull(cohort)
+
+sep_out_coh <- names(conns)
+
+ds.merge(
+  x.name = "mh_rep", 
+  y.name = "mh_rep_2",
+  by.x.names = "child_id", 
+  by.y.names = "child_id",
+  all.x = TRUE,
+  all.y = TRUE,
+  newobj = "mh_rep", 
+  datasources = conns[sep_out_coh])
+
+datashield.workspace_save(conns, "exp-mh")
+
+################################################################################
+# 4. Check what is currently available  
+################################################################################
+dfs <- c("non_rep", "year_rep", "mh_rep")
+
+avail.vars <- dfs %>%
+  map(function(x){
+    
+    out <- ds.colnames(x) %>% 
+      unlist() %>% 
+      unique
+    
+    out <- out[out != "cohort_id"]
+    
+    return(out)
+    }) %>%
+  set_names(dfs)
+
+save.image()
+
 ################################################################################
 # 3. Check data
 ################################################################################
-available <- vars_collapse %>%
+df_valid <- vars_collapse %>%
+  dplyr::filter(df_name != "mh_rep_2")
+
+available <- df_valid %>%
   pmap(function(df_name, vars){
     
     dh.classDiscrepancy(
       df = df_name,
       vars = unlist(vars))
   }) %>%
-  set_names(sort(vars_collapse$df_name))
+  set_names(sort(df_valid$df_name))
 
 available$non_rep %>% print(n = Inf)
-available$year_rep
-available$mh_rep
+available$year_rep %>% print(n = Inf)
+available$mh_rep %>% print(n = Inf)
 
 save.image()
 
-available$non_rep %>% print(n = Inf)
 ################################################################################
 # 4. Fill missing variables  
 ################################################################################
 ds.dataFrameFill("non_rep", "non_rep_fill")
-ds.dataFrameFill("year_rep", "year_rep_fill")
 ds.dataFrameFill("mh_rep", "mh_rep_fill")
+ds.dataFrameFill("year_rep", "year_rep_fill")
 
-ds.dataFrame("year_rep", newobj = "year_rep_fill")
+#ds.assign("non_rep", "non_rep_fill")
+#ds.assign("year_rep", "year_rep_fill")
+#ds.assign("mh_rep", "mh_rep_fill")
+
+datashield.workspace_save(conns, "exp-mh")
+
+################################################################################
+# 5. See what is available  
+################################################################################
+non_rep_avail <- dh.getStats(
+  df = "non_rep",
+  vars = avail.vars$non_rep)
+
+year_rep_avail <- dh.getStats(
+  df = "year_rep",
+  vars = avail.vars$year_rep)
+
+mh_avail <- dh.getStats(
+  df = "mh_rep",
+  vars = c("adhd_raw_", "ext_raw_", "int_raw_", "nvi_raw_", "lan_raw_", 
+           "wm_raw_", "fm_raw_", "gm_raw_"))
+
+save.image()
+
+missing_exp <- non_rep_avail$continuous %>%
+  dplyr::filter(is.na(std.dev)) %>%
+  dplyr::select(variable, cohort) %>%
+  arrange(cohort)
+
+missing_out <- mh_avail$continuous %>%
+  dplyr::filter(is.na(std.dev)) %>%
+  dplyr::select(variable, cohort) %>%
+  arrange(cohort)
+
+avail_out <- mh_avail$continuous %>%
+  dplyr::filter(!is.na(std.dev)) %>%
+  dplyr::select(variable, cohort) %>%
+  arrange(cohort)
+
+missing_out %>% print(n = Inf)
+
+write_csv(missing_exp, file = here("tables", "miss_exp_24_08_22.csv"))
+write_csv(missing_out, file = here("tables", "miss_out_24_08_22.csv"))
+
+missing_exp %>% print(n = Inf)
+
+ds.colnames("mh_rep")
+
+missing_out %>%
+  print(n = Inf)
+
 
 datashield.workspace_save(conns, "exp-mh")
 ################################################################################
 # 5. Check filled data
 ################################################################################
-filled <- vars_collapse %>%
+fill_ref <- df_valid %>%
+  mutate(df_name = paste0(df_name, "_fill"))
+
+filled <- fill_ref %>%
   pmap(function(df_name, vars){
     
     dh.classDiscrepancy(
       df = df_name,
       vars = unlist(vars))
   }) %>%
-  set_names(sort(vars_collapse$df_name))
+  set_names(sort(df_valid$df_name))
 
 filled$non_rep %>% dplyr::filter(discrepancy == "yes")
 filled$year_rep %>% dplyr::filter(discrepancy == "yes")
@@ -122,7 +225,8 @@ dh.dropCols(
   df = "non_rep", 
   vars = c("child_id", "urb_area_id"), 
   type = "keep",
-  new_obj = "area_id")
+  new_obj = "area_id", 
+  checks = F)
 
 ## ---- Merge this into datasets where it doesn't exist ------------------------
 ds.merge(
@@ -173,9 +277,14 @@ save.image()
 ################################################################################
 cohortSubset <- function(df){
   
-  tibble(
-    cohort = c("inma_gip", "inma_sab", "inma_val"),
-    value = c("1102", "1103", "1104")) %>%
+  ref <- tibble(
+    cohort = c("inma_gip", "inma_sab", "inma_val", "eden_nan", "eden_poit"),
+    value = c("1102", "1103", "1104", "1801", "1802")) 
+  
+  ref_actual <- ref %>%
+    dplyr::filter(cohort %in% names(conns))
+  
+  ref_actual %>%
     pmap(function(cohort, value){
       
       ds.dataFrameSubset(
@@ -193,6 +302,9 @@ cohortSubset <- function(df){
 cohortSubset("non_rep_sub")
 cohortSubset("year_rep_sub")
 cohortSubset("mh_rep_sub")
+
+ds.summary("non_rep_sub")
+ds.dim("non_rep_sub")
 
 datashield.workspace_save(conns, "exp-mh")
 
