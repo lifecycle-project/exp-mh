@@ -7,7 +7,6 @@
 ################################################################################
 
 conns <- datashield.login(logindata, restore = "exp-mh")
-
 ################################################################################
 # 1. Fill  
 ################################################################################
@@ -27,10 +26,6 @@ dh.columnCast(
 new_conns <- c("abdc", "alspac", "dnbc", "eden_nan", "eden_poit", "genr")
 
 datashield.workspace_save(conns, "exp-mh")
-
-
-## Let's re-write the boxcox function to use the anonymised data for now. 
-## Can give as output a table with the best transformation
 
 ################################################################################
 # 3. Identify cohorts  
@@ -68,8 +63,10 @@ save.image()
 ################################################################################
 
 ## ---- Create copies of mh df -------------------------------------------------
-c("int_inst", "ext_inst", "adhd_inst", "lan_inst", "nvi_inst", "wm_inst", 
-  "fm_inst", "gm_inst") %>%
+instr_df <- c("int_inst", "ext_inst", "adhd_inst", "lan_inst", "nvi_inst", "wm_inst", 
+              "fm_inst", "gm_inst")
+
+instr_df %>%
   map(
     ~ds.assign(toAssign = "mh_rep_sub", newobj = .x))
 
@@ -89,7 +86,9 @@ instr.ref <- tribble(
   "inma_gip", "adhd", "adhd_instr_", "20", "adhd_inst",
   "inma_sab", "adhd", "adhd_instr_", "20", "adhd_inst",
   "inma_val", "adhd", "adhd_instr_", "20", "adhd_inst",
-  "moba", "adhd", "adhd_instr", "25", "adhd_inst", 
+  "ninfea", "adhd", "adhd_instr_", "25", "adhd_inst",
+  "rhea", "adhd", "adhd_instr_", "20", "adhd_inst",
+  "moba", "adhd", "adhd_instr_", "25", "adhd_inst", 
   "eden_nan", "nvi", "nvi_instr_", "60", "nvi_inst", 
   "eden_poit", "nvi", "nvi_instr_", "60", "nvi_inst", 
   "inma_gip", "nvi", "nvi_instr_", "45", "nvi_inst", 
@@ -114,7 +113,6 @@ instr.ref <- tribble(
   "rhea", "gm", "gm_instr_", "39", "gm_inst")
 
 instr.ref %>%
-  dplyr::filter(outcome == "gm") %>%
   pmap(function(cohort, outcome, inst_var, inst, new_obj){
     
     ds.dataFrameSubset(
@@ -126,8 +124,36 @@ instr.ref %>%
       datasources = conns[cohort])
     
   })
-    
+
 datashield.workspace_save(conns, "exp-mh")
+
+## ---- Check this has worked --------------------------------------------------
+instr_short.ref <- instr.ref %>%
+  dplyr::select(inst_var, new_obj) %>%
+  distinct 
+
+instr.stats <- instr_short.ref %>%
+  pmap(~dh.getStats(
+    df = .y, 
+    vars = .x))
+
+instr.stats %>% 
+  map(function(x){
+    x$categorical %>% 
+      dplyr::filter(!is.na(category) & cohort != "combined" & value > 0) %>%
+      group_by(cohort, variable) %>%
+      group_split %>%
+      map(~tibble(
+        outcome = .$variable,
+        instr = .$category,
+        cohort = .$cohort, 
+        n_inst = length(.$cohort))) %>%
+      bind_rows %>%
+      dplyr::filter(n_inst > 1)
+  }) 
+
+save.image()
+
 
 ################################################################################
 # 3. Subset for oldest age point
@@ -331,8 +357,8 @@ out_sub_ref %>%
     
   })
 
-ds.ls()
 datashield.workspace_save(conns, "exp-mh")
+datashield.workspace_save(conns, "exp-mh_bak")
 
 ################################################################################
 # 4. Transform where skewed  
@@ -349,10 +375,10 @@ ds.dataFrame(
   x = c("int_sub", "int_t"), 
   newobj = "int_sub")
 
-ds.histogram(
-  x = "int_t", 
-  num.breaks = 20, 
-  datasources = conns[int_coh])
+#ds.histogram(
+#  x = "int_t", 
+#  num.breaks = 20, 
+#  datasources = conns[int_coh])
 
 ## ---- Externalising ----------------------------------------------------------
 ds.assign(
@@ -364,10 +390,10 @@ ds.dataFrame(
   x = c("ext_sub", "ext_t"), 
   newobj = "ext_sub")
 
-ds.histogram(
-  x = "ext_t", 
-  num.breaks = 20, 
-  datasources = conns[ext_coh])
+#ds.histogram(
+#  x = "ext_t", 
+#  num.breaks = 20, 
+#  datasources = conns[ext_coh])
 
 datashield.workspace_save(conns, "exp-mh")
 
@@ -382,10 +408,10 @@ ds.dataFrame(
   newobj = "adhd_sub", 
   datasources = conns[adhd_coh])
 
-ds.histogram(
-  x = "adhd_t", 
-  num.breaks = 20, 
- datasources = conns[adhd_coh])
+#ds.histogram(
+#  x = "adhd_t", 
+#  num.breaks = 20, 
+# datasources = conns[adhd_coh])
 
 datashield.workspace_save(conns, "exp-mh")
 
@@ -401,10 +427,10 @@ ds.dataFrame(
   newobj = "lan_sub", 
   datasources = conns[lan_coh])
 
-ds.histogram(
-  x = "lan_t", 
-  num.breaks = 20,  
-  datasources = conns[lan_coh])
+#ds.histogram(
+#  x = "lan_t", 
+#  num.breaks = 20,  
+#  datasources = conns[lan_coh])
 
 ## ---- NVI --------------------------------------------------------------------
 ds.colnames("nvi_sub", datasources = conns[nvi_coh])
@@ -420,10 +446,10 @@ ds.dataFrame(
   newobj = "wm_sub", 
   datasources = conns[wm_coh])
 
-ds.histogram(
-  x = "wm_t",
-  num.breaks = 20,  
-  datasources = conns[wm_coh])
+#ds.histogram(
+#  x = "wm_t",
+#  num.breaks = 20,  
+#  datasources = conns[wm_coh])
 
 ## ---- Fine motor -------------------------------------------------------------
 ds.assign(
@@ -436,10 +462,10 @@ ds.dataFrame(
   newobj = "fm_sub", 
   datasources = conns[fm_coh])
 
-ds.histogram(
-  x = "fm_t", 
-  num.breaks = 20, 
-  datasources = conns[fm_coh])
+#ds.histogram(
+#  x = "fm_t", 
+#  num.breaks = 20, 
+#  datasources = conns[fm_coh])
 
 ## ---- Gross motor ------------------------------------------------------------
 ds.assign(
@@ -452,16 +478,17 @@ ds.dataFrame(
   newobj = "gm_sub", 
   datasources = conns[gm_coh])
 
-ds.histogram(
-  x = "gm_t", 
-  num.breaks = 20, 
-  datasources = conns[gm_coh])
+#ds.histogram(
+#  x = "gm_t", 
+#  num.breaks = 20, 
+#  datasources = conns[gm_coh])
 
 datashield.workspace_save(conns, "exp-mh")
 
 ################################################################################
 # 5. Convert to z-scores  
 ################################################################################
+conns <- datashield.login(logindata, restore = "exp-mh")
 
 ## ---- Helper function --------------------------------------------------------
 makeZscore <- function(df, var, new_var, new_obj, conns){

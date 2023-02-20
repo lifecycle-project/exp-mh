@@ -6,11 +6,16 @@
 ## Email: tica@sund.ku.dk
 ################################################################################
 
-withr::with_libpaths(new = "~/R/userlib",
-                     devtools::install_github("lifecycle-project/ds-helper"))
+withr::with_libpaths(
+  new = "~/R/userlib",
+  devtools::install_github("lifecycle-project/ds-helper", ref = "dev"))
 
 library(dsExposomeClient)
 conns <- datashield.login(logindata, restore = "exp-mh")
+
+ds.colnames("non_rep_sub")
+
+ds.summary("non_rep_sub$ndvi300_preg")
 
 ################################################################################
 # 6. Transform variables  

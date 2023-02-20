@@ -6,34 +6,12 @@
 ## Email: tica@sund.ku.dk
 ################################################################################
 
-
-
 library(here)
 
-library(DSMolgenisArmadillo)
-
-install.packages("MolgenisArmadillo")
-library(MolgenisArmadillo)
-
-library(arma)
 
 ls("package:DSMolgenisArmadillo")
 ls("package:MolgenisArmadillo")
 
-conns <- datashield.login(logindata, restore = "exp-mh")
-
-opal_coh <- c("dnbc", "genr", "inma_val", "ninfea", "rhea")
-arm_coh <- c("abcd", "alspac", "bib", "eden_nan")
-
-datashield.pkg_status(conns[opal_coh])
-datashield.pkg_status(conns)
-
-armadillo.whitelist_packages(conns)
-
-dsListPackages("arm_coh")
-
-
-arm_coh <- 
 
 conns <- datashield.login(logindata, restore = "exp-mh")
 
@@ -58,6 +36,7 @@ cohort_tables <- left_join(
 # 2. Assign variables
 ################################################################################
 current_coh <- names(conns)
+
 ## ---- All cohorts with initial access ----------------------------------------
 cohort_tables %>%
   dplyr::filter(cohort %in% current_coh) %>%
@@ -137,12 +116,15 @@ save.image()
 ################################################################################
 # 4. Fill missing variables  
 ################################################################################
+conns <- datashield.login(logindata, restore = "exp-mh")
+
 ds.dataFrameFill("non_rep", "non_rep_fill")
-ds.dataFrameFill("mh_rep", "mh_rep_fill")
 ds.dataFrameFill("year_rep", "year_rep_fill")
+ds.dataFrameFill("mh_rep", "mh_rep_fill")
+
 
 #ds.assign("non_rep", "non_rep_fill")
-#ds.assign("year_rep", "year_rep_fill")
+ds.assign("year_rep", "year_rep_fill")
 #ds.assign("mh_rep", "mh_rep_fill")
 
 datashield.workspace_save(conns, "exp-mh")
@@ -268,6 +250,8 @@ urb_sub %>%
       newobj = new_obj)
     
   })
+
+ds.summary("non_rep_sub$ndvi300_preg")
 
 datashield.workspace_save(conns, "exp-mh")
 save.image()
