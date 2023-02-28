@@ -10,7 +10,7 @@ conns <- datashield.login(logindata, restore = "exp-mh")
 
 ds.colnames("analysis_df_w")
 
-ds.cor("analysis_df_w$edu_m_.0_1", "analysis_df_w$edu_m")
+ds.cor("analysis_df_w$edu_m_.0_1", "analysis_df_w$pm25_preg")
 
 
 test <- ds.glmSLMA(

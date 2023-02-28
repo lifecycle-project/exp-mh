@@ -10,32 +10,6 @@ library(GGally)
 source("~/wp6-traj-ineq/code/datashield/bmj/var-reference.R")
 cohort.ref <- read_csv("~/cohort_info.csv")
 
-load("plots.RData")
-
-rm(int.fit)
-rm(ext.fit)
-rm(adhd.fit)
-rm(int_conv.fit)
-rm(ext_conv.fit)
-rm(adhd_conv.fit)
-rm(int_s_1.fit)
-rm(int_s_2.fit)
-rm(ext_s_1.fit)
-rm(ext_s_2.fit)
-rm(adhd_s_1.fit)
-rm(adhd_s_2.fit)
-rm(int_conv_s_1.fit)
-rm(int_conv_s_2.fit)
-rm(ext_conv_s_1.fit)
-rm(ext_conv_s_2.fit)
-rm(adhd_conv_s_1.fit)
-rm(adhd_conv_s_2.fit)
-
-save.image("plots.RData")
-
-source("https://raw.githubusercontent.com/timcadman/useful-code-r/master/code/themes/lc-names-neat.R")
-source("https://raw.githubusercontent.com/timcadman/useful-code-r/master/code/themes/themes.R")
-
 conns <- datashield.login(logindata, restore = "exp-mh")
 ################################################################################
 # METHODS  
@@ -679,144 +653,61 @@ coh.plots %>%
 ## ---- Externalising ----------------------------------------------------------
 .cohDir(coh.pdata$adhd, "landuseshan300_preg_iqr_c")
 
+
 ################################################################################
-# SENSITIVITY  
-################################################################################
-################################################################################
-# Checking selection bias  
-################################################################################
-################################################################################
-# Prepare data  
+# Selection bias plot  
 ################################################################################
 
-## ---- Internalising ----------------------------------------------------------
+h2
 int_s.pdata <- prepMainPlot(
   mdata = int.mdata, 
-  out_name = "Adjusted, complete cases", 
-  coh_type = "combined") %>%
-  dplyr::select(full_name, est, lowci, uppci, outcome)
+  out_name = "Complete cases, adjusted", 
+  coh_type = "combined")
 
-int_s_1.pdata <- prepMainPlot(
+int_s1.pdata <- prepMainPlot(
   mdata = int_s_1.mdata, 
-  out_name = "Unadjusted, full sample", 
-  coh_type = "combined") %>%
-  dplyr::select(full_name, est, lowci, uppci, outcome)
+  out_name = "Full sample, unadjusted", 
+  coh_type = "combined")
 
-int_s_2.pdata <- prepMainPlot(
+int_s2.pdata <- prepMainPlot(
   mdata = int_s_2.mdata, 
-  out_name = "Unadjusted, complete cases", 
-  coh_type = "combined") %>%
-  dplyr::select(full_name, est, lowci, uppci, outcome)
+  out_name = "Complete cases, unadjusted", 
+  coh_type = "combined")
 
-## ---- Externalising ----------------------------------------------------------
 ext_s.pdata <- prepMainPlot(
   mdata = ext.mdata, 
-  out_name = "Adjusted, complete cases", 
-  coh_type = "combined") %>%
-  dplyr::select(full_name, est, lowci, uppci, outcome)
+  out_name = "Complete cases, adjusted", 
+  coh_type = "combined")
 
-ext_s_1.pdata <- prepMainPlot(
+ext_s1.pdata <- prepMainPlot(
   mdata = ext_s_1.mdata, 
-  out_name = "Unadjusted, full sample", 
-  coh_type = "combined") %>%
-  dplyr::select(full_name, est, lowci, uppci, outcome)
+  out_name = "Full sample, unadjusted", 
+  coh_type = "combined")
 
-ext_s_2.pdata <- prepMainPlot(
+ext_s2.pdata <- prepMainPlot(
   mdata = ext_s_2.mdata, 
-  out_name = "Unadjusted, complete cases", 
-  coh_type = "combined") %>%
-  dplyr::select(full_name, est, lowci, uppci, outcome)
+  out_name = "Complete cases, unadjusted", 
+  coh_type = "combined")
+  
+adhd_s1.pdata <- prepMainPlot(
+  mdata = adhd_s_1.mdata, 
+  out_name = "Full sample, unadjusted", 
+  coh_type = "combined")
 
-## ---- ADHD -------------------------------------------------------------------
 adhd_s.pdata <- prepMainPlot(
   mdata = adhd.mdata, 
-  out_name = "Adjusted, complete cases", 
-  coh_type = "combined") %>%
-  dplyr::select(full_name, est, lowci, uppci, outcome)
+  out_name = "Complete cases, adjusted", 
+  coh_type = "combined")
 
-adhd_s_1.pdata <- prepMainPlot(
-  mdata = adhd_s_1.mdata, 
-  out_name = "Unadjusted, full sample", 
-  coh_type = "combined") %>%
-  dplyr::select(full_name, est, lowci, uppci, outcome)
-
-adhd_s_2.pdata <- prepMainPlot(
+adhd_s2.pdata <- prepMainPlot(
   mdata = adhd_s_2.mdata, 
-  out_name = "Unadjusted, complete cases", 
-  coh_type = "combined") %>%
-  dplyr::select(full_name, est, lowci, uppci, outcome)
-
-save.image("plots.RData")
-
-################################################################################
-# Make plots  
-################################################################################
-
-## ---- Function ---------------------------------------------------------------
-.sensPlot <- function(data){
+  out_name = "Complete cases, unadjusted", 
+  coh_type = "combined")
   
-  data %>%
-  ggplot(aes(
-  y = outcome, x = est, xmin = lowci, xmax = uppci, colour = outcome)) + 
-    geom_point(size = 3) + 
-    geom_errorbarh(height = .1) + 
-    geom_vline(xintercept = 0, 
-               linetype=2, 
-               size=0.5,
-               colour = "black") +
-  scale_size_manual(values = c(3, 6)) + 
-  scale_x_continuous(limits = c(-0.1, 0.1), breaks = c(-0.1,0.1), 
-                     oob = scales::rescale_none) +
-  labs(x ="Mean change in score for IQR increase in exposure") +
-  facet_wrap(~full_name) + 
-  coord_flip() + 
-  labs(colour = 'Exposure family') +
-  theme(
-    text = element_text(size = 20), 
-    axis.title.x = element_blank(),
-    axis.title.y = element_text(size = 24),
-    axis.text.y = element_text(hjust = 1),
-    axis.text.x = element_blank(),
-    axis.ticks = element_line(colour = "black"),
-    axis.line = element_line(size = .2, linetype = "solid"),
-    panel.background = element_blank(),
-    plot.title=element_text(hjust = .5),
-    strip.text = element_text(size=20)) + 
-  scale_colour_manual(values = palette_std[c(1, 5, 2)])
 
-}
 
-## ---- Plots ------------------------------------------------------------------
-int_sens <- bind_rows(int_s.pdata, int_s_1.pdata, int_s_2.pdata) %>%
-  .sensPlot
 
-ext_sens <- bind_rows(ext_s.pdata, ext_s_1.pdata, ext_s_2.pdata) %>%
-  .sensPlot
 
-adhd_sens <- bind_rows(adhd_s.pdata, adhd_s_1.pdata, adhd_s_2.pdata) %>%
-  .sensPlot
-
-## ---- Save -------------------------------------------------------------------
-ggsave(
-  filename = here("figures","int_sens.jpg"),
-  plot = int_sens,
-  device = "jpeg", 
-  h = word_full-0.2, 
-  w = word_land)
-
-ggsave(
-  filename = here("figures","ext_sens.jpg"),
-  plot = ext_sens,
-  device = "jpeg", 
-  h = word_full-0.2, 
-  w = word_land)
-
-ggsave(
-  filename = here("figures","adhd_sens.jpg"),
-  plot = adhd_sens,
-  device = "jpeg", 
-  h = word_full-0.2, 
-  w = word_land)
 
 
 ################################################################################
